@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Register from "./components/Register";
 
 const App = () => {
   const [noteTitle, setNoteTitle] = useState("");
@@ -122,6 +123,8 @@ const App = () => {
           ))}
         </ul>
       </div>
+
+      <Register />
     </div>
   );
 };
