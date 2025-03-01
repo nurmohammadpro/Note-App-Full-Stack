@@ -37,7 +37,7 @@ function Register() {
         email: email,
       });
 
-      navigate("/dashboard");
+      navigate("/login");
     } catch (err) {
       let errorMessage = "Registration failed. Please try again.";
       if (err.code === "auth/email-already-in-use")

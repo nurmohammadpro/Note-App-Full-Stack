@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Navbar from "./Navbar";
 
 const Dashboard = () => {
   const [noteTitle, setNoteTitle] = useState("");
@@ -61,6 +62,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col mt-20 w-full max-w-[1280px] mx-auto h-screen items-center">
+      <Navbar />
       <div className="w-full mb-8 text-center">
         <h1 className="text-4xl font-bold">Notes App</h1>
       </div>
