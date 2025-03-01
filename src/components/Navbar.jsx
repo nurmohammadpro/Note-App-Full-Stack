@@ -59,32 +59,34 @@ const Navbar = () => {
   };
 
   return (
-    <div className="absolute top-0 left-0 right-0 flex items-center justify-between py-8 w-full max-w-[1280px] mx-auto">
-      <div>
-        {location.pathname === "/dashboard" ? (
-          <img src={InnerLogo} alt="" width={48} />
-        ) : (
-          <Link to="/">
+    <div className="h-18 bg-gray-200 shadow-md shadow-gray-400">
+      <div className="absolute top-1 left-0 right-0 flex items-center justify-between py-2 w-full max-w-[1280px] mx-auto">
+        <div>
+          {location.pathname === "/dashboard" ? (
             <img src={InnerLogo} alt="" width={48} />
-          </Link>
+          ) : (
+            <Link to="/">
+              <img src={InnerLogo} alt="" width={48} />
+            </Link>
+          )}
+        </div>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : userData ? (
+          <div className="flex flex-col items-end gap-4">
+            <div className="flex gap-2">
+              <h2 className="text-2xl font-bold text-gray-700">
+                Welcome, {userData.name}
+              </h2>
+              <img src={RegisteredUser} alt="" width={32} />
+              <Button title="Logout" type="submit" onClick={handleLogOut} />
+            </div>
+          </div>
+        ) : (
+          <img src={UnresigteredUser} alt="" width={32} />
         )}
       </div>
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : userData ? (
-        <div className="flex flex-col items-end gap-4">
-          <div className="flex gap-2">
-            <h2 className="text-2xl font-bold text-gray-700">
-              Welcome, {userData.name}
-            </h2>
-            <img src={RegisteredUser} alt="" width={32} />
-          </div>
-          <Button title="Logout" type="submit" onClick={handleLogOut} />
-        </div>
-      ) : (
-        <img src={UnresigteredUser} alt="" width={32} />
-      )}
     </div>
   );
 };
