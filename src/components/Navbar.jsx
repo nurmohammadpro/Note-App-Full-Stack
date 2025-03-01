@@ -1,57 +1,90 @@
-import InnerLogo from "../assets/InnerLogo.png";
-import Button from "./Button";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import InnerLogo from "../assets/InnerLogo.png";
+import UnresigteredUser from "../assets/unreguser.svg";
+import RegisteredUser from "../assets/reguser.svg";
+import Button from "./Button";
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = auth.currentUser;
-        console.log("auth.currentUser:", user); // Check if user is authenticated
-        if (user) {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log("User authenticated:", user.uid); // Debugging
+        try {
           const userDocRef = doc(db, "users", user.uid);
-          console.log("userDocRef:", userDocRef); // Check document reference
           const userDocSnap = await getDoc(userDocRef);
-          console.log("userDocSnap:", userDocSnap); // Check document snapshot
 
           if (userDocSnap.exists()) {
+            console.log("User data found:", userDocSnap.data()); // Debugging
             setUserData(userDocSnap.data());
           } else {
-            console.log("No such document!");
+            setUserData(null);
+            console.log("User data not found in Firestore");
           }
+        } catch (error) {
+          setUserData(null);
+          console.error("Error fetching user data:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } else {
+        setUserData(null);
+        console.log("No user is logged in");
       }
-    };
-    fetchUserData();
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogOut = async () => {
     try {
+      console.log("Before logout: userData =", userData);
+      console.log("Before logout: auth.currentUser =", auth.currentUser);
       await signOut(auth);
-      navigate("/login");
+      setUserData(null);
+      navigate("/");
+      console.log("After logout: userData =", userData);
+      console.log("After logout: auth.currentUser =", auth.currentUser);
     } catch (error) {
       console.error("Error signing out:", error);
     }
   };
 
   return (
-    <div className="flex items-center justify-between py-8 w-full max-w-[1280px] mx-auto">
+    <div className="absolute top-0 left-0 right-0 flex items-center justify-between py-8 w-full max-w-[1280px] mx-auto">
       <div>
-        <img src={InnerLogo} alt="" width={48} />
+        {location.pathname === "/dashboard" ? (
+          <img src={InnerLogo} alt="" width={48} />
+        ) : (
+          <Link to="/">
+            <img src={InnerLogo} alt="" width={48} />
+          </Link>
+        )}
       </div>
 
-      <div>
-        <Button title="Logout" type="submit" onClick={handleLogOut} />
-      </div>
+      {loading ? (
+        <p>Loading...</p>
+      ) : userData ? (
+        <div className="flex flex-col items-end gap-4">
+          <div className="flex gap-2">
+            <h2 className="text-2xl font-bold text-gray-700">
+              Welcome, {userData.name}
+            </h2>
+            <img src={RegisteredUser} alt="" width={32} />
+          </div>
+          <Button title="Logout" type="submit" onClick={handleLogOut} />
+        </div>
+      ) : (
+        <img src={UnresigteredUser} alt="" width={32} />
+      )}
     </div>
   );
 };

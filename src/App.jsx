@@ -21,11 +21,11 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Navbar user={user} />} />
         <Route
           path="/dashboard"
           element={

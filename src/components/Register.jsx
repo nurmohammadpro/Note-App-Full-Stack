@@ -36,6 +36,7 @@ function Register() {
         name: name,
         email: email,
       });
+      console.log("✅ User data saved in Firestore!");
 
       navigate("/login");
     } catch (err) {

@@ -1,5 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
+import { auth, db } from "../firebase";
+import { notes_and_lists } from "genie";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 const Dashboard = () => {
   const [noteTitle, setNoteTitle] = useState("");
@@ -7,6 +17,24 @@ const Dashboard = () => {
   const [notes, setNotes] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editableNote, setEditableNote] = useState(null);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const querySnapshot = await getDocs(
+          collection(db, "users", auth.currentUser.uid, "notes")
+        );
+        const fetchedNotes = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setNotes(fetchedNotes);
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
+    };
+    fetchNotes();
+  }, []);
 
   const titleHandler = (e) => {
     setNoteTitle(e.target.value);
@@ -16,41 +44,48 @@ const Dashboard = () => {
     setNoteContent(e.target.value);
   };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
     if (noteTitle === "" || noteContent === "") {
       alert("Please fill in all fields");
       return;
     }
-    if (editMode) {
-      const updatedNotes = notes.map((note) => {
-        if (note.id === editableNote.id) {
-          return {
-            ...note,
+
+    try {
+      if (editMode) {
+        await updateDoc(
+          doc(db, "users", auth.currentUser.uid, "notes", editableNote.id),
+          {
             title: noteTitle,
             content: noteContent,
-          };
-        }
-        return note;
-      });
-      setNotes(updatedNotes);
-      setEditMode(false);
-      setEditableNote(null);
-    } else {
-      const newNote = {
-        id: notes.length + 1,
-        title: noteTitle,
-        content: noteContent,
-      };
-      setNotes([...notes, newNote]);
+          }
+        );
+        const updatedNotes = notes.map((note) =>
+          note.id === editableNote.id
+            ? { ...note, title: noteTitle, content: noteContent }
+            : note
+        );
+        setNotes(updatedNotes);
+      } else {
+        const docRef = await addDoc(
+          collection(db, "users", auth.currentUser.uid, "notes"),
+          {
+            title: noteTitle,
+            content: noteContent,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error adding note:", error);
     }
-    setNoteTitle("");
-    setNoteContent("");
   };
 
-  const removeHandler = (id) => {
-    const updatedNotes = notes.filter((note) => note.id !== id);
-    setNotes(updatedNotes);
+  const removeHandler = async (id) => {
+    try {
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "notes", id));
+    } catch (error) {
+      console.error("Error deleting note:", error);
+    }
   };
 
   const editHandler = (note) => {
