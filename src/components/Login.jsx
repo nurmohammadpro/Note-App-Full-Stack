@@ -78,7 +78,6 @@ const Login = () => {
         </div>
         <button
           type="submit"
-          onClick={togglePasswordVisibility}
           disabled={loading}
           className="mt-4 bg-gray-700 text-white rounded-md p-2 cursor-pointer transition-all ease-in-out duration-300 focus:bg-gray-950"
         >
